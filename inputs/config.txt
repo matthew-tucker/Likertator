@@ -1,0 +1,8 @@
+no_lists 4
+stimuli test-stim.txt
+fillers test-fillers.txt
+no_conds 4
+directions test-directions.txt
+filler_ratio 3:1
+ex_name Al-Sibawayh
+template template.tex
