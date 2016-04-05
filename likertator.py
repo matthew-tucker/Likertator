@@ -12,6 +12,7 @@ import os
 import sys
 import random
 import subprocess
+import math
 
 def parse_config():
     """Parse the config file for this likert task, assumed to be in inputs/config.txt"""
@@ -106,7 +107,7 @@ def check_ratio(ratio = "1:1", fillers_count = None, items_count = None):
     """Check to make sure the fillers and items counts match the filler to item ratio that is specified in the config.txt file."""
     f_ratio = ratio.split(':')
     
-    if not ((fillers_count / int(f_ratio[0])) == (items_count / int(f_ratio[1]))):
+    if not (math.floor(fillers_count / items_count) == math.floor(int(f_ratio[0]) / int(f_ratio[1]))):
         print "Fillers (%i) and items (%i) counts do not match the filler:item ratio specified in config.txt. You should check to make sure everything is correct in this regard." % (int(f_ratio[0]), int(f_ratio[1]))
         sys.exit()
         
@@ -132,10 +133,10 @@ def get_list_items(items = None, list_no = 0, no_lists = 0):
     return ret_val
     
 def exify_item(item = None):
-    """Takes an item and inserts it into a gb4e template in latex. """
+    """Takes an item and inserts it into a line template in latex. """
     return "\\begin{flushright}\n\\textarabic{%s}\n\\end{flushright}\n\n" % item
     
-def write_likert_document(items = None, list_no = 0, exp_name = None, template = None, instructions = None):
+def write_likert_document(items = None, list_no = 0, exp_name = None, template = None):
     """Write out a XeLaTeX document for compilation containing an Arabic Likert task with items as Latin Square list number list_no."""
     
     write_val = template
@@ -159,7 +160,6 @@ def write_likert_document(items = None, list_no = 0, exp_name = None, template =
     context = {
         "listno" : str(list_no),
         "expname" : exp_name,
-        "directions" : instructions,
         "items" : items_list
     }
     
@@ -172,23 +172,11 @@ def write_likert_document(items = None, list_no = 0, exp_name = None, template =
             out_f.close()
     except IOError as e:
         print "There was a problem opening or writing to the output file for List no. %i. Please ensure permissions, etc. are correct." % list_no
+#    except KeyError as e:
+#        print e.args[0]
 
     return ret_val
         
-    
-def parse_instructions(instructions_file = None):
-    """Parse the instructions stroing from instructions_file."""
-    
-    try:
-        ins_f = open(instructions_file, 'r')
-    except IOError as e:
-        print "The instructions file specified in config.txt could not be opened. Please ensure it is correct."
-        
-    ins = ins_f.read().replace('\n', '')
-    
-    ins_f.close()
-    
-    return ins
     
 def parse_template(tex_template = None):
     """Parse the template file given by tex_template into a string for use later in writing to individual lists."""
@@ -228,9 +216,6 @@ def main():
         print "There was no stimuli file specified in config.txt. Please specify the fillers as \"stimuli\"."
         sys.exit()
         
-    # parse the instructions
-    instructions = parse_instructions(instructions_file = config['directions'])
-    
     # parse the template for the experiment
     template = parse_template(tex_template = config['template'])
         
@@ -261,7 +246,7 @@ def main():
         random.shuffle(this_all_items)
         
         # actually write the items to the document
-        list_order = write_likert_document(items = this_all_items, list_no = curr_list, exp_name = config['ex_name'], template = template, instructions = instructions)
+        list_order = write_likert_document(items = this_all_items, list_no = curr_list, exp_name = config['ex_name'], template = template)
         
         f_prefix = config['ex_name'] + "-List-" + str(curr_list)
         
@@ -277,9 +262,9 @@ def main():
         # compile the list
         print "Compiling TeX for List %i..." % curr_list
         
-        FNULL = open(os.devnull, 'w')
+       # FNULL = open(os.devnull, 'w')
         for i in range(1,4):
-            subprocess.call(["xelatex", f_prefix + ".tex"], shell = False, stdout = FNULL, stderr = subprocess.STDOUT)
+            subprocess.call(["xelatex", f_prefix + ".tex"], shell = False)#, stdout = FNULL, stderr = subprocess.STDOUT)
         
         os.chdir("..")
         #end of main list loop

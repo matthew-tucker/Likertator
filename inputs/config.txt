@@ -1,8 +1,8 @@
-no_lists 4
-stimuli test-stim.txt
-fillers test-fillers.txt
-no_conds 4
-directions test-directions.txt
+no_lists 6
+stimuli bahrain-stim.txt
+fillers bahrain-fillers.txt
+no_conds 6
+directions Bahrain-Directions.txt
 filler_ratio 3:1
-ex_name Al-Sibawayh
-template template.tex
+ex_name Al-Bahrain
+template bahrain-template.tex
